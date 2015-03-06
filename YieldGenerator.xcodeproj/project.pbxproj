@@ -1,0 +1,430 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BB9C77891AA90BC00059DF0D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9C77881AA90BC00059DF0D /* AppDelegate.swift */; };
+		BB9C778B1AA90BC00059DF0D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9C778A1AA90BC00059DF0D /* ViewController.swift */; };
+		BB9C778E1AA90BC00059DF0D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB9C778C1AA90BC00059DF0D /* Main.storyboard */; };
+		BB9C77901AA90BC00059DF0D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB9C778F1AA90BC00059DF0D /* Images.xcassets */; };
+		BB9C77931AA90BC00059DF0D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB9C77911AA90BC00059DF0D /* LaunchScreen.xib */; };
+		BB9C779F1AA90BC10059DF0D /* YieldGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9C779E1AA90BC10059DF0D /* YieldGeneratorTests.swift */; };
+		BBC1C5251AA9312E00175DC7 /* YieldGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1C5241AA9312E00175DC7 /* YieldGenerator.swift */; };
+		BBC1C5281AA9DFCA00175DC7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = BBC1C5271AA9DFCA00175DC7 /* README.md */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BB9C77991AA90BC10059DF0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB9C777B1AA90BC00059DF0D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB9C77821AA90BC00059DF0D;
+			remoteInfo = YieldGenerator;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BB9C77831AA90BC00059DF0D /* YieldGenerator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YieldGenerator.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB9C77871AA90BC00059DF0D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB9C77881AA90BC00059DF0D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		BB9C778A1AA90BC00059DF0D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		BB9C778D1AA90BC00059DF0D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		BB9C778F1AA90BC00059DF0D /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		BB9C77921AA90BC00059DF0D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		BB9C77981AA90BC10059DF0D /* YieldGeneratorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YieldGeneratorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB9C779D1AA90BC10059DF0D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB9C779E1AA90BC10059DF0D /* YieldGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YieldGeneratorTests.swift; sourceTree = "<group>"; };
+		BBC1C5241AA9312E00175DC7 /* YieldGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YieldGenerator.swift; sourceTree = "<group>"; };
+		BBC1C5271AA9DFCA00175DC7 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BB9C77801AA90BC00059DF0D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB9C77951AA90BC10059DF0D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BB9C777A1AA90BC00059DF0D = {
+			isa = PBXGroup;
+			children = (
+				BB9C77851AA90BC00059DF0D /* YieldGenerator */,
+				BB9C779B1AA90BC10059DF0D /* YieldGeneratorTests */,
+				BB9C77841AA90BC00059DF0D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BB9C77841AA90BC00059DF0D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB9C77831AA90BC00059DF0D /* YieldGenerator.app */,
+				BB9C77981AA90BC10059DF0D /* YieldGeneratorTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BB9C77851AA90BC00059DF0D /* YieldGenerator */ = {
+			isa = PBXGroup;
+			children = (
+				BBC1C5271AA9DFCA00175DC7 /* README.md */,
+				BB9C77881AA90BC00059DF0D /* AppDelegate.swift */,
+				BB9C778A1AA90BC00059DF0D /* ViewController.swift */,
+				BBC1C5241AA9312E00175DC7 /* YieldGenerator.swift */,
+				BB9C778C1AA90BC00059DF0D /* Main.storyboard */,
+				BB9C778F1AA90BC00059DF0D /* Images.xcassets */,
+				BB9C77911AA90BC00059DF0D /* LaunchScreen.xib */,
+				BB9C77861AA90BC00059DF0D /* Supporting Files */,
+			);
+			path = YieldGenerator;
+			sourceTree = "<group>";
+		};
+		BB9C77861AA90BC00059DF0D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BB9C77871AA90BC00059DF0D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		BB9C779B1AA90BC10059DF0D /* YieldGeneratorTests */ = {
+			isa = PBXGroup;
+			children = (
+				BB9C779E1AA90BC10059DF0D /* YieldGeneratorTests.swift */,
+				BB9C779C1AA90BC10059DF0D /* Supporting Files */,
+			);
+			path = YieldGeneratorTests;
+			sourceTree = "<group>";
+		};
+		BB9C779C1AA90BC10059DF0D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				BB9C779D1AA90BC10059DF0D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BB9C77821AA90BC00059DF0D /* YieldGenerator */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB9C77A21AA90BC10059DF0D /* Build configuration list for PBXNativeTarget "YieldGenerator" */;
+			buildPhases = (
+				BB9C777F1AA90BC00059DF0D /* Sources */,
+				BB9C77801AA90BC00059DF0D /* Frameworks */,
+				BB9C77811AA90BC00059DF0D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YieldGenerator;
+			productName = YieldGenerator;
+			productReference = BB9C77831AA90BC00059DF0D /* YieldGenerator.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BB9C77971AA90BC10059DF0D /* YieldGeneratorTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB9C77A51AA90BC10059DF0D /* Build configuration list for PBXNativeTarget "YieldGeneratorTests" */;
+			buildPhases = (
+				BB9C77941AA90BC10059DF0D /* Sources */,
+				BB9C77951AA90BC10059DF0D /* Frameworks */,
+				BB9C77961AA90BC10059DF0D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB9C779A1AA90BC10059DF0D /* PBXTargetDependency */,
+			);
+			name = YieldGeneratorTests;
+			productName = YieldGeneratorTests;
+			productReference = BB9C77981AA90BC10059DF0D /* YieldGeneratorTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BB9C777B1AA90BC00059DF0D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = "John Holdsworth";
+				TargetAttributes = {
+					BB9C77821AA90BC00059DF0D = {
+						CreatedOnToolsVersion = 6.2;
+					};
+					BB9C77971AA90BC10059DF0D = {
+						CreatedOnToolsVersion = 6.2;
+						TestTargetID = BB9C77821AA90BC00059DF0D;
+					};
+				};
+			};
+			buildConfigurationList = BB9C777E1AA90BC00059DF0D /* Build configuration list for PBXProject "YieldGenerator" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BB9C777A1AA90BC00059DF0D;
+			productRefGroup = BB9C77841AA90BC00059DF0D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB9C77821AA90BC00059DF0D /* YieldGenerator */,
+				BB9C77971AA90BC10059DF0D /* YieldGeneratorTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB9C77811AA90BC00059DF0D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB9C778E1AA90BC00059DF0D /* Main.storyboard in Resources */,
+				BB9C77931AA90BC00059DF0D /* LaunchScreen.xib in Resources */,
+				BB9C77901AA90BC00059DF0D /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB9C77961AA90BC10059DF0D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BB9C777F1AA90BC00059DF0D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBC1C5251AA9312E00175DC7 /* YieldGenerator.swift in Sources */,
+				BB9C778B1AA90BC00059DF0D /* ViewController.swift in Sources */,
+				BBC1C5281AA9DFCA00175DC7 /* README.md in Sources */,
+				BB9C77891AA90BC00059DF0D /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BB9C77941AA90BC10059DF0D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB9C779F1AA90BC10059DF0D /* YieldGeneratorTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BB9C779A1AA90BC10059DF0D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB9C77821AA90BC00059DF0D /* YieldGenerator */;
+			targetProxy = BB9C77991AA90BC10059DF0D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		BB9C778C1AA90BC00059DF0D /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BB9C778D1AA90BC00059DF0D /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		BB9C77911AA90BC00059DF0D /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BB9C77921AA90BC00059DF0D /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		BB9C77A01AA90BC10059DF0D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BB9C77A11AA90BC10059DF0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BB9C77A31AA90BC10059DF0D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = YieldGenerator/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		BB9C77A41AA90BC10059DF0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = YieldGenerator/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		BB9C77A61AA90BC10059DF0D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = YieldGeneratorTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/YieldGenerator.app/YieldGenerator";
+			};
+			name = Debug;
+		};
+		BB9C77A71AA90BC10059DF0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = YieldGeneratorTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/YieldGenerator.app/YieldGenerator";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BB9C777E1AA90BC00059DF0D /* Build configuration list for PBXProject "YieldGenerator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB9C77A01AA90BC10059DF0D /* Debug */,
+				BB9C77A11AA90BC10059DF0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB9C77A21AA90BC10059DF0D /* Build configuration list for PBXNativeTarget "YieldGenerator" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB9C77A31AA90BC10059DF0D /* Debug */,
+				BB9C77A41AA90BC10059DF0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB9C77A51AA90BC10059DF0D /* Build configuration list for PBXNativeTarget "YieldGeneratorTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB9C77A61AA90BC10059DF0D /* Debug */,
+				BB9C77A71AA90BC10059DF0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BB9C777B1AA90BC00059DF0D /* Project object */;
+}
