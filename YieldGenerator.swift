@@ -29,7 +29,7 @@ import Foundation
 
 public class YieldGenerator<T>: GeneratorType {
 
-    private var thread: YieldThread<T>!
+    private let thread: YieldThread<T>!
 
     public init( _ yielder: ((T) -> Bool) -> () ) {
         thread = YieldThread<T>( self, yielder )
@@ -118,7 +118,7 @@ public func regexSequence( input: NSString, pattern: NSString, _ options: NSRegu
                 }
             } )
         } else {
-            println("regexSequence error:\(error?.localizedDescription)")
+            println("YieldGenerator: regexSequence error:\(error?.localizedDescription)")
         }
     }
 }
@@ -144,12 +144,15 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
 
             pclose( fp )
         } else {
-            println( "FILESequence could not open: \(filepath), \(strerror(errno))" )
+            println( "YieldGenerator: FILESequence could not open: \(filepath), \(strerror(errno))" )
         }
     }
 }
 
 #if os(OSX)
+
+public var yieldTaskExitStatus: Int32!
+
 public func TaskSequence( task: NSTask, linesep: NSString = "\n",
     filter: NSString? = nil ) -> SequenceOf<NSString> {
 
@@ -159,7 +162,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
     task.standardError = NSPipe()
     task.standardError.fileHandleForReading.readabilityHandler = {
         (fhandle) in
-        println(fhandle.availableData.string)
+        println("YieldGenerator: TaskSequence stderr: "+fhandle.availableData.string)
     }
 
     task.launch()
@@ -172,43 +175,50 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         let NULL = UnsafePointer<Void>.null()
         let filterBytes = filter?.UTF8String
 
-        while true {
-            let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
-            if endOfLine != NULL {
-                let bytes = UnsafeMutablePointer<Int8>(buffer.bytes)
-                let length = endOfLine-buffer.bytes
+        var endOfInput = false, terminated = false
+        while !(endOfInput && buffer.length == 0) && !terminated {
 
-                if filter == nil || strstr( bytes, filterBytes! ) != NULL {
+            while true {
+                let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
+                if endOfLine == NULL && !endOfInput {
+                    break
+                }
+
+                let bytes = UnsafeMutablePointer<Int8>(buffer.bytes)
+                let length = endOfLine != NULL ? endOfLine-buffer.bytes : buffer.length
+
+                if filter == nil || strnstr( bytes, filterBytes!, UInt(length) ) != NULL {
                     if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
+                        terminated = true
                         task.terminate()
                         break
                     }
                 }
 
-                buffer.replaceBytesInRange( NSMakeRange(0,length+1), withBytes:nil, length:0 )
+                buffer.replaceBytesInRange( NSMakeRange(0,min(length+1,buffer.length)), withBytes:nil, length:0 )
             }
 
-            let data = stdout.availableData
-            if data.length == 0 {
-                if buffer.length > 0 {
-                    yield( buffer.string )
+            if !endOfInput && !terminated {
+                var data = stdout.availableData
+                if data.length != 0 {
+                    buffer.appendData( data )
+                } else {
+                    endOfInput = true
                 }
-                break
             }
-
-            buffer.appendData( data )
         }
 
         task.waitUntilExit()
+        yieldTaskExitStatus = task.terminationStatus
     }
 }
 
-public func CommandSequence( command: String, workDirectory: String = "/tmp",
+public func CommandSequence( command: String, workingDirectory: String = "/tmp",
     linesep: NSString = "\n", filter: String? = nil ) -> SequenceOf<NSString> {
         let task = NSTask()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "exec \(command)"]
-        task.currentDirectoryPath = workDirectory
+        task.currentDirectoryPath = workingDirectory
         return TaskSequence( task, linesep: linesep, filter: filter )
 }
 #endif
@@ -218,6 +228,7 @@ extension NSData {
         if let string = NSString( data: self, encoding: NSUTF8StringEncoding ) {
             return string
         } else {
+            println( "YieldGenerator: Falling back to NSISOLatin1StringEncoding" )
             return NSString( data: self, encoding: NSISOLatin1StringEncoding )!
         }
     }
