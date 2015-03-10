@@ -75,7 +75,7 @@ class YieldGeneratorTests: XCTestCase {
 
     func testFileSequence() {
         for line in FILESequence(__FILE__) {
-            print(line)
+            println(line)
             // Logs to HERE
             if line.rangeOfString("// Logs to HERE").location != NSNotFound {
                 break
@@ -92,6 +92,8 @@ class YieldGeneratorTests: XCTestCase {
         XCTAssertNil(groups[0][1], "nil group")
         XCTAssertEqual(groups[1][1]!, "ck")
     }
+
+    // original tests from https://github.com/kristopherjohnson/KJYield
 
     func testNumericSequence() {
         // Sequence [3, 6, 9, 12, 15]

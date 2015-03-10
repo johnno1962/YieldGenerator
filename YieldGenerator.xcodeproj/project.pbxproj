@@ -13,8 +13,8 @@
 		BB9C77901AA90BC00059DF0D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB9C778F1AA90BC00059DF0D /* Images.xcassets */; };
 		BB9C77931AA90BC00059DF0D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB9C77911AA90BC00059DF0D /* LaunchScreen.xib */; };
 		BB9C779F1AA90BC10059DF0D /* YieldGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9C779E1AA90BC10059DF0D /* YieldGeneratorTests.swift */; };
-		BBC1C5251AA9312E00175DC7 /* YieldGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC1C5241AA9312E00175DC7 /* YieldGenerator.swift */; };
 		BBC1C5281AA9DFCA00175DC7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = BBC1C5271AA9DFCA00175DC7 /* README.md */; };
+		BBFAEC801AAF1E3500D9FA8B /* YieldGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFAEC7F1AAF1E3500D9FA8B /* YieldGenerator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,8 +38,8 @@
 		BB9C77981AA90BC10059DF0D /* YieldGeneratorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YieldGeneratorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB9C779D1AA90BC10059DF0D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB9C779E1AA90BC10059DF0D /* YieldGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YieldGeneratorTests.swift; sourceTree = "<group>"; };
-		BBC1C5241AA9312E00175DC7 /* YieldGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YieldGenerator.swift; sourceTree = "<group>"; };
 		BBC1C5271AA9DFCA00175DC7 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		BBFAEC7F1AAF1E3500D9FA8B /* YieldGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YieldGenerator.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +84,7 @@
 				BBC1C5271AA9DFCA00175DC7 /* README.md */,
 				BB9C77881AA90BC00059DF0D /* AppDelegate.swift */,
 				BB9C778A1AA90BC00059DF0D /* ViewController.swift */,
-				BBC1C5241AA9312E00175DC7 /* YieldGenerator.swift */,
+				BBFAEC7F1AAF1E3500D9FA8B /* YieldGenerator.swift */,
 				BB9C778C1AA90BC00059DF0D /* Main.storyboard */,
 				BB9C778F1AA90BC00059DF0D /* Images.xcassets */,
 				BB9C77911AA90BC00059DF0D /* LaunchScreen.xib */,
@@ -218,8 +218,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBC1C5251AA9312E00175DC7 /* YieldGenerator.swift in Sources */,
 				BB9C778B1AA90BC00059DF0D /* ViewController.swift in Sources */,
+				BBFAEC801AAF1E3500D9FA8B /* YieldGenerator.swift in Sources */,
 				BBC1C5281AA9DFCA00175DC7 /* README.md in Sources */,
 				BB9C77891AA90BC00059DF0D /* AppDelegate.swift in Sources */,
 			);

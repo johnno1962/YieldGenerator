@@ -60,8 +60,8 @@ private final class YieldThread<T> {
     private var lastValue: T?
 
     init( _ generator: YieldGenerator<T>, _ yielder: ((T) -> Bool) -> () ) {
-        yeildGeneratorThreads++
         owner = generator
+        yeildGeneratorThreads++
         dispatch_semaphore_signal(wantsValue)
         dispatch_async(yieldQueue, {
             yielder(self.yeilded)
@@ -80,8 +80,7 @@ private final class YieldThread<T> {
             lastValue = value
             dispatch_semaphore_signal(valueAvailable)
             return true
-        }
-        else {
+        } else {
             return false
         }
     }
@@ -98,6 +97,32 @@ public func yieldSequence<T> ( yielder: ((T) -> Bool) -> () ) -> SequenceOf<T> {
     return YieldGenerator( yielder ).sequence()
 }
 
+public func regexSequence( input: NSString, pattern: NSString, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> SequenceOf<[String?]> {
+    return yieldSequence {
+        (yield) in
+        var error: NSError?
+        if let regex = NSRegularExpression( pattern: pattern, options: options, error: &error ) {
+            regex.enumerateMatchesInString( input, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
+                (match, flags, shouldStop) in
+                var groups = [String?]()
+                for groupno in 0...regex.numberOfCaptureGroups {
+                    let range = match.rangeAtIndex(groupno)
+                    if ( range.location != NSNotFound ) {
+                        groups.append( input.substringWithRange(range) )
+                    } else {
+                        groups.append( nil )
+                    }
+                }
+                if !yield( groups ) {
+                    shouldStop.memory = true
+                }
+            } )
+        } else {
+            println("regexSequence error:\(error?.localizedDescription)")
+        }
+    }
+}
+
 public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
     return yieldSequence {
         (yield) in
@@ -105,45 +130,96 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
             popen( filepath.substringToIndex(filepath.length-1), "r" ) :
             fopen( filepath.UTF8String, "r" )
         if fp != nil {
-            let buffer = [Int8](count: 10000, repeatedValue: 0)
+            var buffer = [Int8](count: 10000, repeatedValue: 0)
 
             while fgets( UnsafeMutablePointer<Int8>(buffer), Int32(buffer.count), fp ) != nil {
+                let newlinePos = strlen(buffer)-1 as Int
+                if newlinePos >= 0 {
+                    buffer[newlinePos] = 0
+                }
                 if !yield( NSString( UTF8String: buffer )! ) {
                     break
                 }
             }
 
             pclose( fp )
+        } else {
+            println( "FILESequence could not open: \(filepath), \(strerror(errno))" )
         }
     }
 }
 
-public func regexSequence( input: NSString, pattern: NSString, options: NSRegularExpressionOptions ) -> SequenceOf<[String?]> {
+#if os(OSX)
+public func TaskSequence( task: NSTask, linesep: NSString = "\n",
+    filter: NSString? = nil ) -> SequenceOf<NSString> {
+
+    task.standardOutput = NSPipe()
+    let stdout = task.standardOutput.fileHandleForReading
+
+    task.standardError = NSPipe()
+    task.standardError.fileHandleForReading.readabilityHandler = {
+        (fhandle) in
+        println(fhandle.availableData.string)
+    }
+
+    task.launch()
+
+    let buffer = NSMutableData( data: stdout.availableData )
+
     return yieldSequence {
         (yield) in
-        var error: NSError?
-        if let regex = NSRegularExpression(pattern: pattern, options: options, error: &error) {
-            regex.enumerateMatchesInString(input, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
-                (match, flags, shouldStop) in
-                var groups = [String?]()
-                for groupno in 0...regex.numberOfCaptureGroups {
-                    let range = match.rangeAtIndex(groupno)
-                    if ( range.location != NSNotFound ) {
-                        groups.append( input.substringWithRange(range) )
-                    }
-                    else {
-                        groups.append( nil )
+        let eolChar = linesep.characterAtIndex(0)
+        let NULL = UnsafePointer<Void>.null()
+        let filterBytes = filter?.UTF8String
+
+        while true {
+            let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
+            if endOfLine != NULL {
+                let bytes = UnsafeMutablePointer<Int8>(buffer.bytes)
+                let length = endOfLine-buffer.bytes
+
+                if filter == nil || strstr( bytes, filterBytes! ) != NULL {
+                    if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
+                        task.terminate()
+                        break
                     }
                 }
-                if !yield( groups ) {
-                    shouldStop.memory = true
+
+                buffer.replaceBytesInRange( NSMakeRange(0,length+1), withBytes:nil, length:0 )
+            }
+
+            let data = stdout.availableData
+            if data.length == 0 {
+                if buffer.length > 0 {
+                    yield( buffer.string )
                 }
-            })
-        } else {
-            println("regexSequence error:\(error?.localizedDescription)" )
-            return
+                break
+            }
+
+            buffer.appendData( data )
         }
+
+        task.waitUntilExit()
     }
 }
 
+public func CommandSequence( command: String, workDirectory: String = "/tmp",
+    linesep: NSString = "\n", filter: String? = nil ) -> SequenceOf<NSString> {
+        let task = NSTask()
+        task.launchPath = "/bin/bash"
+        task.arguments = ["-c", "exec \(command)"]
+        task.currentDirectoryPath = workDirectory
+        return TaskSequence( task, linesep: linesep, filter: filter )
+}
+#endif
+
+extension NSData {
+    var string: NSString {
+        if let string = NSString( data: self, encoding: NSUTF8StringEncoding ) {
+            return string
+        } else {
+            return NSString( data: self, encoding: NSISOLatin1StringEncoding )!
+        }
+    }
+}
 
