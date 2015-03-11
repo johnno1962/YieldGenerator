@@ -46,6 +46,11 @@ The generator loop is run in it's own thread calling yield() when it wants to ma
 
 I'd thought this was an original idea but the terrain was already surveyed by [Kristopher Johnson](https://gist.github.com/kristopherjohnson/68711422475ecc010e05) just a month after Swift came out. Anyway, this is my take on it. I've included Kristopher's tests to make sure it still runs.
 
+On OSX the following api also is available that can be used to the output to process output of a UNIX command, something like popen() of old..
+
+    public func CommandSequence( command: String, workingDirectory: String = "/tmp",
+        linesep: NSString = "\n", filter: String? = nil ) -> SequenceOf<NSString>
+
 ### License MIT
 
 Copyright (c) 2015 John Holdsworth
