@@ -178,7 +178,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         var endOfInput = false, terminated = false
         while !(endOfInput && buffer.length == 0) && !terminated {
 
-            while true {
+            while buffer.length != 0 {
                 let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
                 if endOfLine == NULL && !endOfInput {
                     break
@@ -217,7 +217,7 @@ public func CommandSequence( command: String, workingDirectory: String = "/tmp",
     linesep: NSString = "\n", filter: String? = nil ) -> SequenceOf<NSString> {
         let task = NSTask()
         task.launchPath = "/bin/bash"
-        task.arguments = ["-c", "exec \(command)"]
+        task.arguments = ["-c", command]
         task.currentDirectoryPath = workingDirectory
         return TaskSequence( task, linesep: linesep, filter: filter )
 }
