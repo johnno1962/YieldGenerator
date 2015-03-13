@@ -175,8 +175,8 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         let NULL = UnsafePointer<Void>.null()
         let filterBytes = filter?.UTF8String
 
-        var endOfInput = false, terminated = false
-        while !(endOfInput && buffer.length == 0) && !terminated {
+        var endOfInput = false
+        while !(endOfInput && buffer.length == 0) {
 
             while buffer.length != 0 {
                 let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
@@ -189,16 +189,16 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
 
                 if filter == nil || strnstr( bytes, filterBytes!, UInt(length) ) != NULL {
                     if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
-                        terminated = true
+                        yieldTaskExitStatus = -1
                         task.terminate()
-                        break
+                        return
                     }
                 }
 
                 buffer.replaceBytesInRange( NSMakeRange(0,min(length+1,buffer.length)), withBytes:nil, length:0 )
             }
 
-            if !endOfInput && !terminated {
+            if !endOfInput {
                 var data = stdout.availableData
                 if data.length != 0 {
                     buffer.appendData( data )
