@@ -144,7 +144,7 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
 
             pclose( fp )
         } else {
-            println( "YieldGenerator: FILESequence could not open: \(filepath), \(strerror(errno))" )
+            println( "YieldGenerator: FILESequence could not open: \(filepath), \(NSString( UTF8String: strerror(errno) )!)" )
         }
     }
 }
@@ -217,7 +217,7 @@ public func CommandSequence( command: String, workingDirectory: String = "/tmp",
     linesep: NSString = "\n", filter: String? = nil ) -> SequenceOf<NSString> {
         let task = NSTask()
         task.launchPath = "/bin/bash"
-        task.arguments = ["-c", command]
+        task.arguments = ["-c", command+" 2>&1"]
         task.currentDirectoryPath = workingDirectory
         return TaskSequence( task, linesep: linesep, filter: filter )
 }
