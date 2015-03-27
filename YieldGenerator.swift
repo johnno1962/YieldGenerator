@@ -154,7 +154,7 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
 public var yieldTaskExitStatus: Int32!
 
 public func TaskSequence( task: NSTask, linesep: NSString = "\n",
-    filter: NSString? = nil ) -> SequenceOf<NSString> {
+    filter: NSString? = nil, filter2: NSString? = nil ) -> SequenceOf<NSString> {
 
     task.standardOutput = NSPipe()
     let stdout = task.standardOutput.fileHandleForReading
@@ -174,6 +174,8 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         let eolChar = linesep.characterAtIndex(0)
         let NULL = UnsafePointer<Void>.null()
         let filterBytes = filter?.UTF8String
+        let filter2Bytes = filter2?.UTF8String
+        let filter2Length = filter2 != nil ? strlen( filter2Bytes! ) : 0;
 
         var endOfInput = false
         while !(endOfInput && buffer.length == 0) {
@@ -187,7 +189,9 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
                 let bytes = UnsafeMutablePointer<Int8>(buffer.bytes)
                 let length = endOfLine != NULL ? endOfLine-buffer.bytes : buffer.length
 
-                if filter == nil || strnstr( bytes, filterBytes!, UInt(length) ) != NULL {
+                if filter == nil && filter2 == nil ||
+                        filter != nil && strnstr( bytes, filterBytes!, UInt(length) ) != NULL ||
+                        filter2 != nil && strncmp( bytes, filter2Bytes!, filter2Length ) == 0 {
                     if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
                         yieldTaskExitStatus = -1
                         task.terminate()
@@ -214,12 +218,12 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
 }
 
 public func CommandSequence( command: String, workingDirectory: String = "/tmp",
-    linesep: NSString = "\n", filter: String? = nil ) -> SequenceOf<NSString> {
+    linesep: NSString = "\n", filter: String? = nil, filter2: String? = nil ) -> SequenceOf<NSString> {
         let task = NSTask()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", command+" 2>&1"]
         task.currentDirectoryPath = workingDirectory
-        return TaskSequence( task, linesep: linesep, filter: filter )
+        return TaskSequence( task, linesep: linesep, filter: filter, filter2: filter2 )
 }
 #endif
 
