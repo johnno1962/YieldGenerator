@@ -2,6 +2,8 @@
 //  YieldGenerator.swift
 //  YieldGenerator - Python's "yield" for Swift generators
 //
+//  Repo: https://github.com/johnno1962/YieldGenerator
+//
 //  Created by John Holdsworth on 06/03/2015.
 //  Copyright (c) 2015 John Holdsworth. All rights reserved.
 //
@@ -123,6 +125,8 @@ public func regexSequence( input: NSString, pattern: NSString, _ options: NSRegu
     }
 }
 
+public var yieldTaskExitStatus: Int32!
+
 public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
     return yieldSequence {
         (yield) in
@@ -142,16 +146,44 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
                 }
             }
 
-            pclose( fp )
+            yieldTaskExitStatus = pclose( fp ) >> 8
         } else {
             println( "YieldGenerator: FILESequence could not open: \(filepath), \(NSString( UTF8String: strerror(errno) )!)" )
         }
     }
 }
 
-#if os(OSX)
+public class CommandGenerator: GeneratorType {
 
-public var yieldTaskExitStatus: Int32!
+    let fp: UnsafeMutablePointer<FILE>
+    var buffer = [Int8](count: 10001, repeatedValue: 0)
+
+    public init( _ command: String ) {
+        fp = popen( command, "r" )
+    }
+
+    public func next() -> NSString? {
+        if fgets( UnsafeMutablePointer<Int8>(buffer), Int32(buffer.count-1), fp ) != nil {
+            let newlinePos = strlen(buffer)-1 as Int
+            if newlinePos >= 0 {
+                buffer[newlinePos] = 0
+            }
+            return NSString( UTF8String: buffer )!
+        } else {
+            return nil
+        }
+    }
+
+    public func sequence() -> SequenceOf<NSString> {
+        return SequenceOf({self})
+    }
+
+    deinit {
+        yieldTaskExitStatus = pclose( fp ) >> 8
+    }
+}
+
+#if os(OSX)
 
 public func TaskSequence( task: NSTask, linesep: NSString = "\n",
     filter: NSString? = nil, filter2: NSString? = nil ) -> SequenceOf<NSString> {
@@ -167,8 +199,6 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
 
     task.launch()
 
-    let buffer = NSMutableData( data: stdout.availableData )
-
     return yieldSequence {
         (yield) in
         let eolChar = linesep.characterAtIndex(0)
@@ -177,8 +207,19 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         let filter2Bytes = filter2?.UTF8String
         let filter2Length = filter2 != nil ? strlen( filter2Bytes! ) : 0;
 
+        let buffer = NSMutableData()
+
         var endOfInput = false
-        while !(endOfInput && buffer.length == 0) {
+        do {
+
+            if !endOfInput {
+                var data = stdout.availableData
+                if data.length != 0 {
+                    buffer.appendData( data )
+                } else {
+                    endOfInput = true
+                }
+            }
 
             while buffer.length != 0 {
                 let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
@@ -202,15 +243,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
                 buffer.replaceBytesInRange( NSMakeRange(0,min(length+1,buffer.length)), withBytes:nil, length:0 )
             }
 
-            if !endOfInput {
-                var data = stdout.availableData
-                if data.length != 0 {
-                    buffer.appendData( data )
-                } else {
-                    endOfInput = true
-                }
-            }
-        }
+        } while !(endOfInput && buffer.length == 0)
 
         task.waitUntilExit()
         yieldTaskExitStatus = task.terminationStatus
@@ -225,6 +258,54 @@ public func CommandSequence( command: String, workingDirectory: String = "/tmp",
         task.currentDirectoryPath = workingDirectory
         return TaskSequence( task, linesep: linesep, filter: filter, filter2: filter2 )
 }
+
+private var bashGenerator: GeneratorOf<NSString>!
+private var bashStandardInput: NSFileHandle!
+private var bashLock = NSLock()
+
+public func BashSequence( command: String, workingDirectory: String = "/tmp" ) -> SequenceOf<NSString> {
+    bashLock.lock()
+    if bashGenerator == nil {
+        let task = NSTask()
+        task.launchPath = "/bin/bash"
+        task.currentDirectoryPath = "/tmp"
+        task.standardInput = NSPipe()
+        bashStandardInput = task.standardInput.fileHandleForWriting
+        bashGenerator = TaskSequence( task ).generate()
+    }
+    return SequenceOf({BashGenerator( command, workingDirectory: workingDirectory )})
+}
+
+private var bashEOF = "___END___ " as NSString
+
+private class BashGenerator: GeneratorType {
+
+    init( _ command: String, workingDirectory: String = "/tmp" ) {
+        let command = "(cd \"\(workingDirectory)\" && \(command) 2>&1)"
+        let utf8 = (command+" ; echo \"\(bashEOF)$?\"\n" as NSString).UTF8String
+        bashStandardInput.writeData( NSData( bytesNoCopy:
+            UnsafeMutablePointer<Void>( utf8 ),
+            length: Int(strlen( utf8 )), freeWhenDone: false ) )
+    }
+
+    func next() -> NSString? {
+        if let next = bashGenerator.next() {
+            if !next.hasPrefix(bashEOF) {
+                return next
+            }
+            else {
+                let status = next.substringFromIndex( bashEOF.length )
+                yieldTaskExitStatus = Int32(status.toInt()!)
+            }
+        } else {
+            NSLog( "BashGenerator Exited!" )
+            bashGenerator = nil
+        }
+        bashLock.unlock()
+        return nil
+    }
+}
+
 #endif
 
 extension NSData {
