@@ -2,10 +2,12 @@
 //  YieldGenerator.swift
 //  YieldGenerator - Python's "yield" for Swift generators
 //
-//  Repo: https://github.com/johnno1962/YieldGenerator
-//
 //  Created by John Holdsworth on 06/03/2015.
 //  Copyright (c) 2015 John Holdsworth. All rights reserved.
+//
+//  $Id: //depot/YieldGenerator/YieldGenerator.swift#8 $
+//
+//  Repo: https://github.com/johnno1962/YieldGenerator
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -31,7 +33,7 @@ import Foundation
 
 public class YieldGenerator<T>: GeneratorType {
 
-    private let thread: YieldThread<T>!
+    private var thread: YieldThread<T>!
 
     public init( _ yielder: ((T) -> Bool) -> () ) {
         thread = YieldThread<T>( self, yielder )
@@ -46,11 +48,11 @@ public class YieldGenerator<T>: GeneratorType {
     }
 
     deinit {
-        dispatch_semaphore_signal(thread.wantsValue)
+        dispatch_semaphore_signal( thread.wantsValue )
     }
 }
 
-private let yieldQueue = dispatch_queue_create("YieldThreads", DISPATCH_QUEUE_CONCURRENT)
+private let yieldQueue = dispatch_queue_create( "YieldThreads", DISPATCH_QUEUE_CONCURRENT )
 public var yeildGeneratorThreads = 0
 
 private final class YieldThread<T> {
@@ -64,23 +66,23 @@ private final class YieldThread<T> {
     init( _ generator: YieldGenerator<T>, _ yielder: ((T) -> Bool) -> () ) {
         owner = generator
         yeildGeneratorThreads++
-        dispatch_semaphore_signal(wantsValue)
-        dispatch_async(yieldQueue, {
-            yielder(self.yeilded)
+        dispatch_semaphore_signal( wantsValue )
+        dispatch_async( yieldQueue, {
+            yielder( self.yeilded )
             if self.owner != nil {
-                dispatch_semaphore_wait(self.wantsValue, DISPATCH_TIME_FOREVER)
+                dispatch_semaphore_wait( self.wantsValue, DISPATCH_TIME_FOREVER )
                 self.lastValue = nil
-                dispatch_semaphore_signal(self.valueAvailable)
+                dispatch_semaphore_signal( self.valueAvailable )
             }
             yeildGeneratorThreads--
         })
     }
 
-    func yeilded(value:T) -> Bool {
+    func yeilded( value:T ) -> Bool {
         if owner != nil {
-            dispatch_semaphore_wait(wantsValue, DISPATCH_TIME_FOREVER)
+            dispatch_semaphore_wait( wantsValue, DISPATCH_TIME_FOREVER )
             lastValue = value
-            dispatch_semaphore_signal(valueAvailable)
+            dispatch_semaphore_signal( valueAvailable )
             return true
         } else {
             return false
@@ -88,9 +90,9 @@ private final class YieldThread<T> {
     }
 
     func next() -> T? {
-        dispatch_semaphore_wait(valueAvailable, DISPATCH_TIME_FOREVER)
+        dispatch_semaphore_wait( valueAvailable, DISPATCH_TIME_FOREVER )
         let value = lastValue
-        dispatch_semaphore_signal(wantsValue)
+        dispatch_semaphore_signal( wantsValue )
         return value
     }
 }
@@ -99,12 +101,12 @@ public func yieldSequence<T> ( yielder: ((T) -> Bool) -> () ) -> SequenceOf<T> {
     return YieldGenerator( yielder ).sequence()
 }
 
-public func regexSequence( input: NSString, pattern: NSString, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> SequenceOf<[String?]> {
+public func regexSequence( input: NSString, pattern: String, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> SequenceOf<[String?]> {
     return yieldSequence {
         (yield) in
         var error: NSError?
         if let regex = NSRegularExpression( pattern: pattern, options: options, error: &error ) {
-            regex.enumerateMatchesInString( input, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
+            regex.enumerateMatchesInString( input as String, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
                 (match, flags, shouldStop) in
                 var groups = [String?]()
                 for groupno in 0...regex.numberOfCaptureGroups {
@@ -120,14 +122,14 @@ public func regexSequence( input: NSString, pattern: NSString, _ options: NSRegu
                 }
             } )
         } else {
-            println("YieldGenerator: regexSequence error:\(error?.localizedDescription)")
+            println( "YieldGenerator: regexSequence error:\(error?.localizedDescription)" )
         }
     }
 }
 
 public var yieldTaskExitStatus: Int32!
 
-public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
+public func FILESequence( filepath: NSString ) -> SequenceOf<String> {
     return yieldSequence {
         (yield) in
         let fp = filepath.substringFromIndex(filepath.length-1) == "|" ?
@@ -137,11 +139,11 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<NSString> {
             var buffer = [Int8](count: 10000, repeatedValue: 0)
 
             while fgets( UnsafeMutablePointer<Int8>(buffer), Int32(buffer.count), fp ) != nil {
-                let newlinePos = strlen(buffer)-1 as Int
+                let newlinePos = Int(strlen(buffer)-1)
                 if newlinePos >= 0 {
                     buffer[newlinePos] = 0
                 }
-                if !yield( NSString( UTF8String: buffer )! ) {
+                if !yield( String( UTF8String: buffer )! ) {
                     break
                 }
             }
@@ -162,19 +164,19 @@ public class CommandGenerator: GeneratorType {
         fp = popen( command, "r" )
     }
 
-    public func next() -> NSString? {
+    public func next() -> String? {
         if fgets( UnsafeMutablePointer<Int8>(buffer), Int32(buffer.count-1), fp ) != nil {
-            let newlinePos = strlen(buffer)-1 as Int
+            let newlinePos = Int(strlen(buffer)-1)
             if newlinePos >= 0 {
                 buffer[newlinePos] = 0
             }
-            return NSString( UTF8String: buffer )!
+            return String( UTF8String: buffer )!
         } else {
             return nil
         }
     }
 
-    public func sequence() -> SequenceOf<NSString> {
+    public func sequence() -> SequenceOf<String> {
         return SequenceOf({self})
     }
 
@@ -186,7 +188,7 @@ public class CommandGenerator: GeneratorType {
 #if os(OSX)
 
 public func TaskSequence( task: NSTask, linesep: NSString = "\n",
-    filter: NSString? = nil, filter2: NSString? = nil ) -> SequenceOf<NSString> {
+    filter: NSString? = nil, filter2: NSString? = nil ) -> SequenceOf<String> {
 
     task.standardOutput = NSPipe()
     let stdout = task.standardOutput.fileHandleForReading
@@ -202,7 +204,6 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
     return yieldSequence {
         (yield) in
         let eolChar = linesep.characterAtIndex(0)
-        let NULL = UnsafePointer<Void>.null()
         let filterBytes = filter?.UTF8String
         let filter2Bytes = filter2?.UTF8String
         let filter2Length = filter2 != nil ? strlen( filter2Bytes! ) : 0;
@@ -222,17 +223,17 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
             }
 
             while buffer.length != 0 {
-                let endOfLine = memchr( buffer.bytes, Int32(eolChar), UInt(buffer.length) )
-                if endOfLine == NULL && !endOfInput {
+                let endOfLine = memchr( buffer.bytes, Int32(eolChar), Int(buffer.length) )
+                if endOfLine == nil && !endOfInput {
                     break
                 }
 
                 let bytes = UnsafeMutablePointer<Int8>(buffer.bytes)
-                let length = endOfLine != NULL ? endOfLine-buffer.bytes : buffer.length
+                let length = endOfLine != nil ? endOfLine-buffer.bytes : buffer.length
 
                 if filter == nil && filter2 == nil ||
-                        filter != nil && strnstr( bytes, filterBytes!, UInt(length) ) != NULL ||
-                        filter2 != nil && strncmp( bytes, filter2Bytes!, filter2Length ) == 0 {
+                        filter != nil && strnstr( bytes, filterBytes!, Int(length) ) != nil ||
+                        filter2 != nil && strncmp( bytes, filter2Bytes!, Int(filter2Length) ) == 0 {
                     if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
                         yieldTaskExitStatus = -1
                         task.terminate()
@@ -251,7 +252,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
 }
 
 public func CommandSequence( command: String, workingDirectory: String = "/tmp",
-    linesep: NSString = "\n", filter: String? = nil, filter2: String? = nil ) -> SequenceOf<NSString> {
+    linesep: NSString = "\n", filter: String? = nil, filter2: String? = nil ) -> SequenceOf<String> {
         let task = NSTask()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", command+" 2>&1"]
@@ -259,11 +260,11 @@ public func CommandSequence( command: String, workingDirectory: String = "/tmp",
         return TaskSequence( task, linesep: linesep, filter: filter, filter2: filter2 )
 }
 
-private var bashGenerator: GeneratorOf<NSString>!
+private var bashGenerator: GeneratorOf<String>?
 private var bashStandardInput: NSFileHandle!
 private var bashLock = NSLock()
 
-public func BashSequence( command: String, workingDirectory: String = "/tmp" ) -> SequenceOf<NSString> {
+public func BashSequence( command: String, workingDirectory: String = "/tmp" ) -> SequenceOf<String> {
     bashLock.lock()
     if bashGenerator == nil {
         let task = NSTask()
@@ -288,13 +289,13 @@ private class BashGenerator: GeneratorType {
             length: Int(strlen( utf8 )), freeWhenDone: false ) )
     }
 
-    func next() -> NSString? {
-        if let next = bashGenerator.next() {
-            if !next.hasPrefix(bashEOF) {
+    func next() -> String? {
+        if let next = bashGenerator?.next() {
+            if !next.hasPrefix(bashEOF as String) {
                 return next
             }
             else {
-                let status = next.substringFromIndex( bashEOF.length )
+                let status = (next as NSString).substringFromIndex( bashEOF.length )
                 yieldTaskExitStatus = Int32(status.toInt()!)
             }
         } else {
@@ -309,12 +310,12 @@ private class BashGenerator: GeneratorType {
 #endif
 
 extension NSData {
-    var string: NSString {
+    var string: String {
         if let string = NSString( data: self, encoding: NSUTF8StringEncoding ) {
-            return string
+            return string as String
         } else {
             println( "YieldGenerator: Falling back to NSISOLatin1StringEncoding" )
-            return NSString( data: self, encoding: NSISOLatin1StringEncoding )!
+            return NSString( data: self, encoding: NSISOLatin1StringEncoding )! as String
         }
     }
 }

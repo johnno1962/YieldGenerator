@@ -78,7 +78,7 @@ class YieldGeneratorTests: XCTestCase {
         for line in FILESequence(__FILE__) {
             println(line)
             // Logs to HERE
-            if line.rangeOfString("// Logs to HERE").location != NSNotFound {
+            if line.rangeOfString("// Logs to HERE") != nil {
                 foundLine = line
                 break
             }
