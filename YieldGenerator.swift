@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 06/03/2015.
 //  Copyright (c) 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/YieldGenerator/YieldGenerator.swift#9 $
+//  $Id: //depot/YieldGenerator/YieldGenerator.swift#10 $
 //
 //  Repo: https://github.com/johnno1962/YieldGenerator
 //
@@ -199,6 +199,12 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         println("YieldGenerator: TaskSequence stderr: "+fhandle.availableData.string)
     }
 
+    let recoverFileDescriptors: (Void) -> Void = {
+        task.standardInput.fileHandleForWriting?.closeFile()
+        task.standardOutput.fileHandleForReading.closeFile()
+        task.standardError.fileHandleForReading.closeFile()
+    }
+
     task.launch()
 
     return yieldSequence {
@@ -236,9 +242,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
                         filter2 != nil && strncmp( bytes, filter2Bytes!, Int(filter2Length) ) == 0 {
                     if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
                         task.terminate()
-                        task.standardInput.fileHandleForWriting?.closeFile()
-                        task.standardOutput.fileHandleForReading.closeFile()
-                        task.standardError.fileHandleForReading.closeFile()
+                        recoverFileDescriptors()
                         yieldTaskExitStatus = -1
                         return
                     }
@@ -250,6 +254,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         } while !(endOfInput && buffer.length == 0)
 
         task.waitUntilExit()
+        recoverFileDescriptors()
         yieldTaskExitStatus = task.terminationStatus
     }
 }
