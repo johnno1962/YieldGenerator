@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 06/03/2015.
 //  Copyright (c) 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/YieldGenerator/YieldGenerator.swift#10 $
+//  $Id: //depot/YieldGenerator/YieldGenerator.swift#11 $
 //
 //  Repo: https://github.com/johnno1962/YieldGenerator
 //
@@ -43,8 +43,8 @@ public class YieldGenerator<T>: GeneratorType {
         return thread.next()
     }
 
-    public func sequence() -> SequenceOf<T> {
-        return SequenceOf({self})
+    public func sequence() -> AnySequence<T> {
+        return AnySequence({self})
     }
 
     deinit {
@@ -97,20 +97,20 @@ private final class YieldThread<T> {
     }
 }
 
-public func yieldSequence<T> ( yielder: ((T) -> Bool) -> () ) -> SequenceOf<T> {
+public func yieldSequence<T> ( yielder: ((T) -> Bool) -> () ) -> AnySequence<T> {
     return YieldGenerator( yielder ).sequence()
 }
 
-public func regexSequence( input: NSString, pattern: String, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> SequenceOf<[String?]> {
+public func regexSequence( input: NSString, pattern: String, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> AnySequence<[String?]> {
     return yieldSequence {
         (yield) in
-        var error: NSError?
-        if let regex = NSRegularExpression( pattern: pattern, options: options, error: &error ) {
-            regex.enumerateMatchesInString( input as String, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
+        do {
+            let regex = try NSRegularExpression( pattern: pattern, options: options)
+            regex.enumerateMatchesInString( input as String, options: [], range: NSMakeRange(0,input.length), usingBlock: {
                 (match, flags, shouldStop) in
                 var groups = [String?]()
                 for groupno in 0...regex.numberOfCaptureGroups {
-                    let range = match.rangeAtIndex(groupno)
+                    let range = match!.rangeAtIndex(groupno)
                     if ( range.location != NSNotFound ) {
                         groups.append( input.substringWithRange(range) )
                     } else {
@@ -121,15 +121,17 @@ public func regexSequence( input: NSString, pattern: String, _ options: NSRegula
                     shouldStop.memory = true
                 }
             } )
-        } else {
-            println( "YieldGenerator: regexSequence error:\(error?.localizedDescription)" )
+        } catch let error as NSError {
+            print( "YieldGenerator: regexSequence error:\(error.localizedDescription)" )
+        } catch {
+            fatalError()
         }
     }
 }
 
 public var yieldTaskExitStatus: Int32!
 
-public func FILESequence( filepath: NSString ) -> SequenceOf<String> {
+public func FILESequence( filepath: NSString ) -> AnySequence<String> {
     return yieldSequence {
         (yield) in
         let fp = filepath.substringFromIndex(filepath.length-1) == "|" ?
@@ -150,7 +152,7 @@ public func FILESequence( filepath: NSString ) -> SequenceOf<String> {
 
             yieldTaskExitStatus = pclose( fp ) >> 8
         } else {
-            println( "YieldGenerator: FILESequence could not open: \(filepath), \(NSString( UTF8String: strerror(errno) )!)" )
+            print( "YieldGenerator: FILESequence could not open: \(filepath), \(NSString( UTF8String: strerror(errno) )!)" )
         }
     }
 }
@@ -176,8 +178,8 @@ public class CommandGenerator: GeneratorType {
         }
     }
 
-    public func sequence() -> SequenceOf<String> {
-        return SequenceOf({self})
+    public func sequence() -> AnySequence<String> {
+        return AnySequence({self})
     }
 
     deinit {
@@ -217,7 +219,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         let buffer = NSMutableData()
 
         var endOfInput = false
-        do {
+        repeat {
 
             if !endOfInput {
                 var data = stdout.availableData
@@ -322,7 +324,7 @@ extension NSData {
         if let string = NSString( data: self, encoding: NSUTF8StringEncoding ) {
             return string as String
         } else {
-            println( "YieldGenerator: Falling back to NSISOLatin1StringEncoding" )
+            print( "YieldGenerator: Falling back to NSISOLatin1StringEncoding" )
             return NSString( data: self, encoding: NSISOLatin1StringEncoding )! as String
         }
     }

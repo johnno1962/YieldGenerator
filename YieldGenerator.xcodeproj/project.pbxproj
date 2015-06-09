@@ -13,7 +13,6 @@
 		BB9C77901AA90BC00059DF0D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB9C778F1AA90BC00059DF0D /* Images.xcassets */; };
 		BB9C77931AA90BC00059DF0D /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB9C77911AA90BC00059DF0D /* LaunchScreen.xib */; };
 		BB9C779F1AA90BC10059DF0D /* YieldGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB9C779E1AA90BC10059DF0D /* YieldGeneratorTests.swift */; };
-		BBC1C5281AA9DFCA00175DC7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = BBC1C5271AA9DFCA00175DC7 /* README.md */; };
 		BBFAEC801AAF1E3500D9FA8B /* YieldGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFAEC7F1AAF1E3500D9FA8B /* YieldGenerator.swift */; };
 /* End PBXBuildFile section */
 
@@ -162,6 +161,7 @@
 		BB9C777B1AA90BC00059DF0D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0620;
 				ORGANIZATIONNAME = "John Holdsworth";
 				TargetAttributes = {
@@ -220,7 +220,6 @@
 			files = (
 				BB9C778B1AA90BC00059DF0D /* ViewController.swift in Sources */,
 				BBFAEC801AAF1E3500D9FA8B /* YieldGenerator.swift in Sources */,
-				BBC1C5281AA9DFCA00175DC7 /* README.md in Sources */,
 				BB9C77891AA90BC00059DF0D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

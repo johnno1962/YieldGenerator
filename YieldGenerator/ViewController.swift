@@ -32,7 +32,7 @@ class ViewController: UIViewController {
 //        }
 //
         while let value = generator.next() {
-            println("Value: \(value)")
+            print("Value: \(value)")
         }
     }
 

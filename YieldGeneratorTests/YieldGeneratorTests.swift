@@ -28,7 +28,7 @@ class YieldGeneratorTests: XCTestCase {
     func testYieldGenerator() {
         // This is an example of a functional test case.
 
-        for i in 0..<100 {
+        for _ in 0..<100 {
             var result = 0
 
             if ( true ) {
@@ -69,14 +69,14 @@ class YieldGeneratorTests: XCTestCase {
         }
 
         NSThread.sleepForTimeInterval(1.0)
-        println(yeildGeneratorThreads)
+        print(yeildGeneratorThreads)
         XCTAssertEqual(yeildGeneratorThreads,0,"threads cleared")
     }
 
     func testFileSequence() {
         var foundLine: String?
         for line in FILESequence(__FILE__) {
-            println(line)
+            print(line)
             // Logs to HERE
             if line.rangeOfString("// Logs to HERE") != nil {
                 foundLine = line
@@ -87,7 +87,7 @@ class YieldGeneratorTests: XCTestCase {
     }
 
     func textRegexSequence() {
-        let groups = Array<[String?]>( regexSequence( "the quick brown fox", "(\\w{3})(\\w+)", nil ) )
+        let groups = Array<[String?]>( regexSequence( "the quick brown fox", pattern: "(\\w{3})(\\w+)", [] ) )
         XCTAssertEqual(groups[0][0]!, "the")
         XCTAssertEqual(groups[0][0]!, "quick")
         XCTAssertEqual(groups[0][0]!, "brown")
@@ -121,7 +121,7 @@ class YieldGeneratorTests: XCTestCase {
 
     func testNumericSequence() {
         // Sequence [3, 6, 9, 12, 15]
-        let seq: SequenceOf<Int> = yieldSequence { yield in
+        let seq: AnySequence<Int> = yieldSequence { yield in
             for n in 0..<5 { yield((n+1) * 3) }
         }
 
@@ -199,7 +199,7 @@ class YieldGeneratorTests: XCTestCase {
         var yieldCount = 0
         var yielderComplete = false
 
-        let seq: SequenceOf<Int> = yieldSequence { yield in
+        let seq: AnySequence<Int> = yieldSequence { yield in
             ++yieldCount
             yield(1)
 
@@ -212,7 +212,7 @@ class YieldGeneratorTests: XCTestCase {
             yielderComplete = true
         }
 
-        var gen = seq.generate()
+        let gen = seq.generate()
         NSThread.sleepForTimeInterval(0.01)
         XCTAssertEqual(2, yieldCount, "yield should not be called until next()")
         XCTAssertFalse(yielderComplete)
@@ -240,7 +240,7 @@ class YieldGeneratorTests: XCTestCase {
     func testDeckOfCards() {
         let suits = ["Clubs", "Diamonds", "Hearts", "Spades"]
         let ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
-        let seq: SequenceOf<String> = yieldSequence { yield in
+        let seq: AnySequence<String> = yieldSequence { yield in
             for suit in suits {
                 for rank in ranks {
                     yield("\(rank) of \(suit)")
@@ -265,16 +265,16 @@ class YieldGeneratorTests: XCTestCase {
         // This is an example of a performance test case.
         self.measureBlock() {
             // Put the code you want to measure the time of here.
-            for v in YieldGenerator<Double>({
+            for _ in YieldGenerator<Double>({
                 (yield) in
                 var a=0.0, b=1.0
-                for i in 0..<1000 {
+                for _ in 0..<1000 {
                     yield(b)
                     let sum = a + b
                     a = b
                     b = sum
                 }
-                println(b)
+                print(b)
             }).sequence() {
             }
         }
