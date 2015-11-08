@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 06/03/2015.
 //  Copyright (c) 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/YieldGenerator/YieldGenerator.swift#11 $
+//  $Id: //depot/YieldGenerator/YieldGenerator.swift#12 $
 //
 //  Repo: https://github.com/johnno1962/YieldGenerator
 //
@@ -101,33 +101,31 @@ public func yieldSequence<T> ( yielder: ((T) -> Bool) -> () ) -> AnySequence<T> 
     return YieldGenerator( yielder ).sequence()
 }
 
-public func regexSequence( input: NSString, pattern: String, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> AnySequence<[String?]> {
-    return yieldSequence {
-        (yield) in
-        do {
-            let regex = try NSRegularExpression( pattern: pattern, options: options)
-            regex.enumerateMatchesInString( input as String, options: [], range: NSMakeRange(0,input.length), usingBlock: {
-                (match, flags, shouldStop) in
-                var groups = [String?]()
-                for groupno in 0...regex.numberOfCaptureGroups {
-                    let range = match!.rangeAtIndex(groupno)
-                    if ( range.location != NSNotFound ) {
-                        groups.append( input.substringWithRange(range) )
-                    } else {
-                        groups.append( nil )
-                    }
-                }
-                if !yield( groups ) {
-                    shouldStop.memory = true
-                }
-            } )
-        } catch let error as NSError {
-            print( "YieldGenerator: regexSequence error:\(error.localizedDescription)" )
-        } catch {
-            fatalError()
-        }
-    }
-}
+//public func regexSequence( input: NSString, pattern: String, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> AnySequence<[String?]> {
+//    return yieldSequence {
+//        (yield) in
+//        var error: NSError?
+//        if let regex = NSRegularExpression( pattern: pattern, options: options, error: &error ) {
+//            regex.enumerateMatchesInString( input as String, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
+//                (match, flags, shouldStop) in
+//                var groups = [String?]()
+//                for groupno in 0...regex.numberOfCaptureGroups {
+//                    let range = match.rangeAtIndex(groupno)
+//                    if ( range.location != NSNotFound ) {
+//                        groups.append( input.substringWithRange(range) )
+//                    } else {
+//                        groups.append( nil )
+//                    }
+//                }
+//                if !yield( groups ) {
+//                    shouldStop.memory = true
+//                }
+//            } )
+//        } else {
+//            print( "YieldGenerator: regexSequence error:\(error?.localizedDescription)" )
+//        }
+//    }
+//}
 
 public var yieldTaskExitStatus: Int32!
 
@@ -190,21 +188,15 @@ public class CommandGenerator: GeneratorType {
 #if os(OSX)
 
 public func TaskSequence( task: NSTask, linesep: NSString = "\n",
-    filter: NSString? = nil, filter2: NSString? = nil ) -> SequenceOf<String> {
+    filter: NSString? = nil, filter2: NSString? = nil ) -> AnySequence<String> {
 
     task.standardOutput = NSPipe()
-    let stdout = task.standardOutput.fileHandleForReading
+    let stdout = task.standardOutput!.fileHandleForReading
 
     task.standardError = NSPipe()
-    task.standardError.fileHandleForReading.readabilityHandler = {
+    task.standardError!.fileHandleForReading.readabilityHandler = {
         (fhandle) in
-        println("YieldGenerator: TaskSequence stderr: "+fhandle.availableData.string)
-    }
-
-    let recoverFileDescriptors: (Void) -> Void = {
-        task.standardInput.fileHandleForWriting?.closeFile()
-        task.standardOutput.fileHandleForReading.closeFile()
-        task.standardError.fileHandleForReading.closeFile()
+        print("YieldGenerator: TaskSequence stderr: "+fhandle.availableData.string)
     }
 
     task.launch()
@@ -222,7 +214,7 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         repeat {
 
             if !endOfInput {
-                var data = stdout.availableData
+                let data = stdout.availableData
                 if data.length != 0 {
                     buffer.appendData( data )
                 } else {
@@ -231,20 +223,22 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
             }
 
             while buffer.length != 0 {
-                let endOfLine = memchr( buffer.bytes, Int32(eolChar), Int(buffer.length) )
+                let endOfLine = UnsafeMutablePointer<Int8>( memchr( buffer.bytes, Int32(eolChar), Int(buffer.length) ) )
                 if endOfLine == nil && !endOfInput {
                     break
                 }
 
                 let bytes = UnsafeMutablePointer<Int8>(buffer.bytes)
-                let length = endOfLine != nil ? endOfLine-buffer.bytes : buffer.length
+                let length = endOfLine != nil ? endOfLine-bytes : buffer.length
 
                 if filter == nil && filter2 == nil ||
                         filter != nil && strnstr( bytes, filterBytes!, Int(length) ) != nil ||
                         filter2 != nil && strncmp( bytes, filter2Bytes!, Int(filter2Length) ) == 0 {
                     if !yield( NSData( bytesNoCopy: bytes, length: length, freeWhenDone: false ).string ) {
                         task.terminate()
-                        recoverFileDescriptors()
+                        task.standardInput!.fileHandleForWriting?.closeFile()
+                        task.standardOutput!.fileHandleForReading.closeFile()
+                        task.standardError!.fileHandleForReading.closeFile()
                         yieldTaskExitStatus = -1
                         return
                     }
@@ -256,13 +250,12 @@ public func TaskSequence( task: NSTask, linesep: NSString = "\n",
         } while !(endOfInput && buffer.length == 0)
 
         task.waitUntilExit()
-        recoverFileDescriptors()
         yieldTaskExitStatus = task.terminationStatus
     }
 }
 
 public func CommandSequence( command: String, workingDirectory: String = "/tmp",
-    linesep: NSString = "\n", filter: String? = nil, filter2: String? = nil ) -> SequenceOf<String> {
+    linesep: NSString = "\n", filter: String? = nil, filter2: String? = nil ) -> AnySequence<String> {
         let task = NSTask()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", command+" 2>&1"]
@@ -270,21 +263,21 @@ public func CommandSequence( command: String, workingDirectory: String = "/tmp",
         return TaskSequence( task, linesep: linesep, filter: filter, filter2: filter2 )
 }
 
-private var bashGenerator: GeneratorOf<String>?
+private var bashGenerator: AnyGenerator<String>?
 private var bashStandardInput: NSFileHandle!
 private var bashLock = NSLock()
 
-public func BashSequence( command: String, workingDirectory: String = "/tmp" ) -> SequenceOf<String> {
+public func BashSequence( command: String, workingDirectory: String = "/tmp" ) -> AnySequence<String> {
     bashLock.lock()
     if bashGenerator == nil {
         let task = NSTask()
         task.launchPath = "/bin/bash"
         task.currentDirectoryPath = "/tmp"
         task.standardInput = NSPipe()
-        bashStandardInput = task.standardInput.fileHandleForWriting
+        bashStandardInput = task.standardInput!.fileHandleForWriting
         bashGenerator = TaskSequence( task ).generate()
     }
-    return SequenceOf({BashGenerator( command, workingDirectory: workingDirectory )})
+    return AnySequence({BashGenerator( command, workingDirectory: workingDirectory )})
 }
 
 private var bashEOF = "___END___ " as NSString
@@ -306,10 +299,10 @@ private class BashGenerator: GeneratorType {
             }
             else {
                 let status = (next as NSString).substringFromIndex( bashEOF.length )
-                yieldTaskExitStatus = Int32(status.toInt()!)
+                yieldTaskExitStatus = Int32(Int(status)!)
             }
         } else {
-            NSLog( "BashGenerator Exited!" )
+            NSLog( "YieldGenerator: BashGenerator Exited!" )
             bashGenerator = nil
         }
         bashLock.unlock()
@@ -329,4 +322,3 @@ extension NSData {
         }
     }
 }
-
