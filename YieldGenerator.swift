@@ -5,7 +5,7 @@
 //  Created by John Holdsworth on 06/03/2015.
 //  Copyright (c) 2015 John Holdsworth. All rights reserved.
 //
-//  $Id: //depot/YieldGenerator/YieldGenerator.swift#12 $
+//  $Id: //depot/YieldGenerator/YieldGenerator.swift#13 $
 //
 //  Repo: https://github.com/johnno1962/YieldGenerator
 //
@@ -31,58 +31,58 @@
 
 import Foundation
 
-public class YieldGenerator<T>: GeneratorType {
+open class YieldGenerator<T>: IteratorProtocol {
 
-    private var thread: YieldThread<T>!
+    fileprivate var thread: YieldThread<T>!
 
-    public init( _ yielder: ((T) -> Bool) -> () ) {
+    public init( _ yielder: @escaping ((T) -> Bool) -> () ) {
         thread = YieldThread<T>( self, yielder )
     }
 
-    public func next() -> T? {
+    open func next() -> T? {
         return thread.next()
     }
 
-    public func sequence() -> AnySequence<T> {
+    open func sequence() -> AnySequence<T> {
         return AnySequence({self})
     }
 
     deinit {
-        dispatch_semaphore_signal( thread.wantsValue )
+        thread.wantsValue.signal()
     }
 }
 
-private let yieldQueue = dispatch_queue_create( "YieldThreads", DISPATCH_QUEUE_CONCURRENT )
+private let yieldQueue = DispatchQueue( label: "YieldThreads", attributes: DispatchQueue.Attributes.concurrent )
 public var yeildGeneratorThreads = 0
 
 private final class YieldThread<T> {
 
-    private let valueAvailable = dispatch_semaphore_create(0)
-    private let wantsValue = dispatch_semaphore_create(0)
+    fileprivate let valueAvailable = DispatchSemaphore(value: 0)
+    fileprivate let wantsValue = DispatchSemaphore(value: 0)
 
-    private weak var owner: YieldGenerator<T>?
-    private var lastValue: T?
+    fileprivate weak var owner: YieldGenerator<T>?
+    fileprivate var lastValue: T?
 
-    init( _ generator: YieldGenerator<T>, _ yielder: ((T) -> Bool) -> () ) {
+    init( _ generator: YieldGenerator<T>, _ yielder: @escaping ((T) -> Bool) -> () ) {
         owner = generator
-        yeildGeneratorThreads++
-        dispatch_semaphore_signal( wantsValue )
-        dispatch_async( yieldQueue, {
+        yeildGeneratorThreads += 1
+        wantsValue.signal()
+        yieldQueue.async(execute: {
             yielder( self.yeilded )
             if self.owner != nil {
-                dispatch_semaphore_wait( self.wantsValue, DISPATCH_TIME_FOREVER )
+                self.wantsValue.wait(timeout: DispatchTime.distantFuture )
                 self.lastValue = nil
-                dispatch_semaphore_signal( self.valueAvailable )
+                self.valueAvailable.signal()
             }
-            yeildGeneratorThreads--
+            yeildGeneratorThreads -= 1
         })
     }
 
-    func yeilded( value:T ) -> Bool {
+    func yeilded( _ value:T ) -> Bool {
         if owner != nil {
-            dispatch_semaphore_wait( wantsValue, DISPATCH_TIME_FOREVER )
+            wantsValue.wait(timeout: DispatchTime.distantFuture )
             lastValue = value
-            dispatch_semaphore_signal( valueAvailable )
+            valueAvailable.signal()
             return true
         } else {
             return false
@@ -90,98 +90,103 @@ private final class YieldThread<T> {
     }
 
     func next() -> T? {
-        dispatch_semaphore_wait( valueAvailable, DISPATCH_TIME_FOREVER )
+        valueAvailable.wait(timeout: DispatchTime.distantFuture )
         let value = lastValue
-        dispatch_semaphore_signal( wantsValue )
+        wantsValue.signal()
         return value
     }
 }
 
-public func yieldSequence<T> ( yielder: ((T) -> Bool) -> () ) -> AnySequence<T> {
+public func yieldSequence<T> ( _ yielder: @escaping ((T) -> Bool) -> () ) -> AnySequence<T> {
     return YieldGenerator( yielder ).sequence()
 }
 
-//public func regexSequence( input: NSString, pattern: String, _ options: NSRegularExpressionOptions = .CaseInsensitive ) -> AnySequence<[String?]> {
-//    return yieldSequence {
-//        (yield) in
-//        var error: NSError?
-//        if let regex = NSRegularExpression( pattern: pattern, options: options, error: &error ) {
-//            regex.enumerateMatchesInString( input as String, options: nil, range: NSMakeRange(0,input.length), usingBlock: {
-//                (match, flags, shouldStop) in
-//                var groups = [String?]()
-//                for groupno in 0...regex.numberOfCaptureGroups {
-//                    let range = match.rangeAtIndex(groupno)
-//                    if ( range.location != NSNotFound ) {
-//                        groups.append( input.substringWithRange(range) )
-//                    } else {
-//                        groups.append( nil )
-//                    }
-//                }
-//                if !yield( groups ) {
-//                    shouldStop.memory = true
-//                }
-//            } )
-//        } else {
-//            print( "YieldGenerator: regexSequence error:\(error?.localizedDescription)" )
-//        }
-//    }
-//}
-
-public var yieldTaskExitStatus: Int32!
-
-public func FILESequence( filepath: NSString ) -> AnySequence<String> {
+public func regexSequence( _ input: NSString, pattern: String, _ options: NSRegularExpression.Options! = .caseInsensitive ) -> AnySequence<[String?]> {
     return yieldSequence {
         (yield) in
-        let fp = filepath.substringFromIndex(filepath.length-1) == "|" ?
-            popen( filepath.substringToIndex(filepath.length-1), "r" ) :
-            fopen( filepath.UTF8String, "r" )
-        if fp != nil {
-            var buffer = [Int8](count: 10000, repeatedValue: 0)
-
-            while fgets( UnsafeMutablePointer<Int8>(buffer), Int32(buffer.count), fp ) != nil {
-                let newlinePos = Int(strlen(buffer)-1)
-                if newlinePos >= 0 {
-                    buffer[newlinePos] = 0
+        var error: NSError?
+        if let regex = try? NSRegularExpression( pattern: pattern, options: options ) {
+            regex.enumerateMatches( in: input as String, options: [], range: NSMakeRange(0,input.length), using: {
+                (match, flags, shouldStop) in
+                var groups = [String?]()
+                for groupno in 0...regex.numberOfCaptureGroups {
+                    let range = match!.rangeAt(groupno)
+                    if ( range.location != NSNotFound ) {
+                        groups.append( input.substring(with: range) )
+                    } else {
+                        groups.append( nil )
+                    }
                 }
-                if !yield( String( UTF8String: buffer )! ) {
-                    break
+                if !yield( groups ) {
+                    shouldStop.pointee = true
                 }
-            }
-
-            yieldTaskExitStatus = pclose( fp ) >> 8
+            } )
         } else {
-            print( "YieldGenerator: FILESequence could not open: \(filepath), \(NSString( UTF8String: strerror(errno) )!)" )
+            print( "YieldGenerator: regexSequence error:\(error?.localizedDescription)" )
         }
     }
 }
 
-public class CommandGenerator: GeneratorType {
+@_silgen_name("popen")
+func _popen( _ command: UnsafePointer<Int8>, _ perms: UnsafePointer<Int8> ) -> UnsafeMutablePointer<FILE>
+
+@_silgen_name("pclose")
+func _pclose( _ fp: UnsafeMutablePointer<FILE> ) -> Int32
+
+public var yieldTaskExitStatus: Int32!
+
+public func FILESequence( _ filepath: NSString ) -> AnySequence<String> {
+    return yieldSequence {
+        (yield) in
+        if let fp = filepath.substring(from: filepath.length-1) == "|" ?
+            _popen( filepath.substring(to: filepath.length-1), "r" ) :
+            fopen( filepath.utf8String, "r" ) {
+            var buffer = [Int8](repeating: 0, count: 10000)
+
+            while fgets( UnsafeMutablePointer<Int8>(mutating: buffer), Int32(buffer.count), fp ) != nil {
+                let newlinePos = Int(strlen(buffer))-1
+                if newlinePos >= 0 {
+                    buffer[newlinePos] = 0
+                }
+                if !yield( String( validatingUTF8: buffer )! ) {
+                    break
+                }
+            }
+
+            yieldTaskExitStatus = _pclose( fp ) >> 8
+        } else {
+            print( "YieldGenerator: FILESequence could not open: \(filepath), \(NSString( utf8String: strerror(errno) )!)" )
+        }
+    }
+}
+
+open class CommandGenerator: IteratorProtocol {
 
     let fp: UnsafeMutablePointer<FILE>
-    var buffer = [Int8](count: 10001, repeatedValue: 0)
+    var buffer = [Int8](repeating: 0, count: 10001)
 
     public init( _ command: String ) {
-        fp = popen( command, "r" )
+        fp = _popen( command, "r" )
     }
 
-    public func next() -> String? {
-        if fgets( UnsafeMutablePointer<Int8>(buffer), Int32(buffer.count-1), fp ) != nil {
-            let newlinePos = Int(strlen(buffer)-1)
+    open func next() -> String? {
+        if fgets( UnsafeMutablePointer<Int8>(mutating: buffer), Int32(buffer.count-1), fp ) != nil {
+            let newlinePos = Int(strlen(buffer))-1
             if newlinePos >= 0 {
                 buffer[newlinePos] = 0
             }
-            return String( UTF8String: buffer )!
+            return String( validatingUTF8: buffer )!
         } else {
             return nil
         }
     }
 
-    public func sequence() -> AnySequence<String> {
+    open func sequence() -> AnySequence<String> {
         return AnySequence({self})
     }
 
     deinit {
-        yieldTaskExitStatus = pclose( fp ) >> 8
+        yieldTaskExitStatus = _pclose( fp ) >> 8
     }
 }
 
@@ -312,13 +317,13 @@ private class BashGenerator: GeneratorType {
 
 #endif
 
-extension NSData {
+extension Data {
     var string: String {
-        if let string = NSString( data: self, encoding: NSUTF8StringEncoding ) {
+        if let string = NSString( data: self, encoding: String.Encoding.utf8.rawValue ) {
             return string as String
         } else {
             print( "YieldGenerator: Falling back to NSISOLatin1StringEncoding" )
-            return NSString( data: self, encoding: NSISOLatin1StringEncoding )! as String
+            return NSString( data: self, encoding: String.Encoding.isoLatin1.rawValue )! as String
         }
     }
 }

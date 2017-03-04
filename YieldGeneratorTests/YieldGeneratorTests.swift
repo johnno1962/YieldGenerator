@@ -22,7 +22,7 @@ class YieldGeneratorTests: XCTestCase {
     }
     
     func randomDelay() {
-        NSThread.sleepForTimeInterval(Double(random()&0xff)*0.00001)
+        Thread.sleep(forTimeInterval: Double(arc4random()&0xff)*0.00001)
     }
 
     func testYieldGenerator() {
@@ -68,17 +68,17 @@ class YieldGeneratorTests: XCTestCase {
             XCTAssertEqual(result,4,"result4")
         }
 
-        NSThread.sleepForTimeInterval(1.0)
+        Thread.sleep(forTimeInterval: 1.0)
         print(yeildGeneratorThreads)
         XCTAssertEqual(yeildGeneratorThreads,0,"threads cleared")
     }
 
     func testFileSequence() {
         var foundLine: String?
-        for line in FILESequence(__FILE__) {
+        for line in FILESequence(#file) {
             print(line)
             // Logs to HERE
-            if line.rangeOfString("// Logs to HERE") != nil {
+            if line.range(of:"// Logs to HERE") != nil {
                 foundLine = line
                 break
             }
@@ -200,32 +200,32 @@ class YieldGeneratorTests: XCTestCase {
         var yielderComplete = false
 
         let seq: AnySequence<Int> = yieldSequence { yield in
-            ++yieldCount
+            yieldCount += 1
             yield(1)
 
-            ++yieldCount
+            yieldCount += 1
             yield(2)
 
-            ++yieldCount
+            yieldCount += 1
             yield(3)
 
             yielderComplete = true
         }
 
-        let gen = seq.generate()
-        NSThread.sleepForTimeInterval(0.01)
+        let gen = seq.makeIterator()
+        Thread.sleep(forTimeInterval: 0.01)
         XCTAssertEqual(2, yieldCount, "yield should not be called until next()")
         XCTAssertFalse(yielderComplete)
 
         let val1 = gen.next()
         XCTAssertEqual(1, val1!)
-        NSThread.sleepForTimeInterval(0.01)
+        Thread.sleep(forTimeInterval: 0.01)
         XCTAssertEqual(3, yieldCount, "should be blocked on second yield call")
         XCTAssertFalse(yielderComplete)
 
         let val2 = gen.next()
         XCTAssertEqual(2, val2!)
-        NSThread.sleepForTimeInterval(0.01)
+        Thread.sleep(forTimeInterval: 0.01)
         XCTAssertEqual(3, yieldCount, "should be blocked on third yield call")
 //        XCTAssertFalse(yielderComplete)
 
@@ -263,7 +263,7 @@ class YieldGeneratorTests: XCTestCase {
     
     func testFibonacciPerformance() {
         // This is an example of a performance test case.
-        self.measureBlock() {
+        self.measure() {
             // Put the code you want to measure the time of here.
             for _ in YieldGenerator<Double>({
                 (yield) in
